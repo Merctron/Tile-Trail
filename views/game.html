@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Tile Trail</title>
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+	<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="js/crafty-min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+	<script type="text/javascript" src="js/index.js"></script>
+	<link href="https://fonts.googleapis.com/css?family=Amatic+SC:700" rel="stylesheet">
+
+	<style type="text/css">
+
+		body {
+			background-color: black;
+			color: #7EBEEC;
+			font-family: 'Amatic SC', cursive; 
+   			font-weight: 300;
+		}
+
+		#game-screen {
+			margin:auto;
+			top: 30px;
+			left: 0;
+			bottom: 0;
+			right: 0;
+		}
+
+		#control-panel button {
+			margin:auto;
+			display: block;
+			margin-top: 5px;
+			width: 80px;
+			font-size: 30px;
+			background-color: #06609F; 
+		}
+
+		#control-panel-2 button {
+			margin:auto;
+			display: block;
+			margin-top: 5px;
+			width: 100px;
+		}
+
+		@-webkit-keyframes test{
+		    0%{
+		        background-image: url('assets/keyframe/wp1.png');
+		    }
+		    25%{
+		        background-image: url('assets/keyframe/wp2.png');
+		    }
+		    50%{
+		        background-image: url('assets/keyframe/wp3.png');
+		    }
+		    75%{
+		        background-image: url('assets/keyframe/wp4.png');
+		    }
+		    100%{
+		        background-image: url('assets/keyframe/wp5.png');
+		    }
+		}
+
+		#overlay {
+			width: 100vw;
+			height: 100vh;
+			position: absolute;
+			background: rgba(0, 0, 0, 0.7);
+			z-index: 100;
+		}
+
+		#overlay button {
+			margin:auto;
+			display: block;
+			margin-top: 5px;
+			width: 250px;
+			font-size: 30px;
+			background-color: #06609F; 
+		}
+
+		#levellist button {
+			margin:auto;
+			display: inline-block;
+			margin-top: 5px;
+			width: 50px;
+			font-size: 30px;
+			background-color: #06609F; 
+		}
+
+		.container {
+			position: relative;
+			top: 10vh;
+		}
+
+		#textpanel {
+			width: 500px;
+			margin: auto;
+		}
+
+		#textpanel button {
+			margin:auto;
+			display: block;
+			margin-top: 5px;
+			width: 250px;
+			font-size: 30px;
+			background-color: #06609F; 
+		}
+
+		.blur {
+			-webkit-filter: blur(20px);
+            -moz-filter: blur(20px);
+            -o-filter: blur(20px);
+            -ms-filter: blur(20px);
+            filter: blur(20px);
+		}
+
+		#anim {
+			width: 1000px;
+			height: 200px;
+			float: left;
+			background-size: contain;
+			background-position: 50% 50%;
+			background-repeat: no-repeat;
+			-webkit-animation: test 12s infinite;
+			        animation: test 12s infinite;
+			-webkit-animation-timing-function: steps(1, end);
+			        animation-timing-function: steps(1, end);
+		}
+	</style>
+</head>
+<body>
+	<div id="overlay">
+		<div class="row">
+			<div class="">
+				<img src="assets/title_banner.png" style="width: 30vw; display:block; margin:auto;" />
+				<br/>
+				<div id="menubpanel">
+					<button id="playb" type="button" class="btn">PLAY NOW</button>
+					<button id="buildb" type="button" class="btn">BUILD A MAP</button>
+					<!--<button id="levelb" type="button" class="btn">SELECT LEVEL</button>-->
+					<button id="aboutb" type="button" class="btn">ABOUT</button>
+				</div>
+				<div id="textpanel" style="display:none;"> 
+					<h2>
+						Tile Trail was built using Crafty.js and HTML5 Canvas.
+						<br/>
+						<br/>
+						The game includes a map builder that helps users create their own levels and add them to the game database. The game will automatically let you know if your map is valid and solvable. Additionally the game will rank you map in difficulty based on the time taken to prove its solvability. 
+						<br/>
+						<br/>
+						<h2 style="text-align:center;"<br/><a href="https://www.merctron.com">>Author: Murtuza Kainan</a></h2>
+						<br/>
+						
+					</h2>
+					<br/>
+					<button id="backb" type="button" class="btn">BACK</button>
+				</div>
+				<div id="levelpanel" style="text-align:center; display:none;">
+					<div id="levellist">
+						<div id="lvlrow1">
+						</div>
+						<div id="lvlrow2">
+						</div>
+					</div>
+					<br/>
+					<button id="backb2" type="button" class="btn" style="display:inline-block;">BACK</button>
+					<button id="backb2" type="button" class="btn" style="display:inline-block;">RANDOM</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+		<div id="underlay" class="row blur">
+			<div id="control-panel" class="col col-md-2">
+				<img src="assets/title_banner.png" style="max-width: 100%; height: auto; margin:auto;" />
+				<h3 id="lvl_header" style="text-align:center;"></h3>
+				<h3 id="obj_header" style="text-align:center;"></h3>
+				<br/>
+				<button id="reset_b" type="button" class="btn"><i class="fa fa-refresh" aria-hidden="true"></i></button>
+				<button id="helpb" type="button" class="btn"><i class="fa fa-question-circle" aria-hidden="true"></i></button>
+				<button id="menub" type="button" class="btn"><i class="fa fa-bars" aria-hidden="true"></i></button>
+			</div>
+			<div id="" class="col col-md-8">
+				<div id="game-screen" class=""></div>
+			</div>
+			<div id="control-panel-2" class="col col-md-2" style="text-align:center;">
+				<h1>HOW TO PLAY</h1>
+				<br/>
+				<h3>MOVE:<br/>
+					<i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
+					<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i>
+					<i class="fa fa-arrow-circle-o-up" aria-hidden="true"></i>
+					<i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i>
+				</h3>
+				<br/>
+				<h3>COLLECT:<br/>
+					<img src="assets/food.png">
+				</h3>
+				<h3>REACH:<br/>
+				<img src="assets/dest.png">
+				</h3>
+				<h3>AVOID:<br/>
+					<img src="assets/Tile_broken_2.png"/>
+				</h3>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
