@@ -27,6 +27,7 @@ var lvl_1_items;
 var lvl_obj 	   = 2;
 var lvl_obj_gained = 0;
 var cur_lvl 	   = 0;
+var cur_lvl_name   = '';
 
 var vp_dx 	= 0;
 var vp_dy 	= 0;
@@ -63,6 +64,7 @@ $(document).ready(function() {
 				vp_dy 			= result.gameState.vp_dy;
 				vpo_dx 			= result.gameState.vpo_dx;
 				vpo_dy 			= result.gameState.vpo_dy;
+				$("#obj_header").text("FOOD NEEDED: " + (lvl_obj - lvl_obj_gained));
 				console.log(lvl_over);
 			});
 
@@ -99,7 +101,7 @@ $(document).ready(function() {
 		$('#underlay').addClass("blur");
 	});
 	$('#reset_b').click(function() {
-		resetGame();
+		resetGame(cur_lvl_name);
 	});
 
 	// $.getJSON("/stat", function(result) {
@@ -114,7 +116,7 @@ $(document).ready(function() {
 	// 	}
 	// 	loadLevel(cur_lvl);
 	// });
-	loadLevel();
+	loadLevel(null);
 	$(document).on('click', '.lvlsb', function(obj) {
 		console.log(obj.target.attributes.data.value);
 		cur_lvl = parseInt(obj.target.attributes.data.value);
@@ -127,11 +129,13 @@ $(document).ready(function() {
 	});
 });
 
-function loadLevel() {
+function loadLevel(level_name) {
 	var url = "/level/get";
+	if (level_name) {
+		url = "/level/get/name/" + level_name;
+	}
 	$.getJSON(url, function(result) {
-		var data = result.result[0];
-		console.log(data);
+		var data = result.result;
 		lvl_obj = data.lvl_obj;
 		lvl_1 = data.map_grid;
 		lvl_1_items = data.map_items;
@@ -145,7 +149,7 @@ function loadLevel() {
 		if (grid_len_y - 8 > 0) {
 			vpo_dy = grid_len_y - 8;
 		}
-
+		cur_lvl_name = data.level_name;
 		$("#lvl_header").text("LEVEL: " + data.level_name);
 		$("#obj_header").text("FOOD NEEDED: " + lvl_obj);
 	 	loadAssets();
@@ -191,8 +195,11 @@ function loadEventHandler() {
 	    		vpo_dy: vpo_dy 
 	    	});
 	    }
-	    else{
-	    	resetGame();
+	    else if (game_over) {
+	    	resetGame(cur_lvl_name);
+	    }
+	    else if (lvl_over) {
+	    	resetGame(null);
 	    }
 	});
 }
@@ -326,7 +333,7 @@ function loop() {
     drawBoard();
 }
 
-function resetGame() {
+function resetGame(level_name) {
 	Crafty('obj').each(function() { this.destroy(); });
 	Crafty.stop(true);
 	window.cancelAnimationFrame(gameLoopHandle);
@@ -346,7 +353,7 @@ function resetGame() {
 	panel 			   = null;
 	lvl_obj_gained 	   = 0;
 
-	loadLevel();
+	loadLevel(level_name);
 	loadEventHandler();
 	startGameLoop();
 }

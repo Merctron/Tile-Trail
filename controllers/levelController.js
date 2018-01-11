@@ -18,7 +18,6 @@ var diffMap = {
 // Get a specific level by name
 levelController.getLevel = function(req, res) {
 	var resp = { success: false };
-
 	mongoClient.connect(dbUrl, function(err, db) {
 		if (err) {
 			console.log('Unable to connect to the mongoDB, cannot get level:', err);
@@ -28,6 +27,7 @@ levelController.getLevel = function(req, res) {
 			var collection = db.collection("levels");
 			collection.findOne({'level_name': req.params.level_name}, function(err, result) {
 				if (err || result == null) {
+					console.log(err);
 					resp.err = 'Level does not exist.';
 					res.status(500).end(JSON.stringify(resp));
 					db.close();
@@ -46,7 +46,6 @@ levelController.getLevel = function(req, res) {
 // Get a random level, TODO: fetch random level by difficulty
 levelController.getRandomLevel = function(req, res) {
 	var resp = { success: false };
-
 	mongoClient.connect(dbUrl, function(err, db) {
 		if (err) {
 			console.log('Unable to connect to the mongoDB, cannot get level:', err);
@@ -56,13 +55,14 @@ levelController.getRandomLevel = function(req, res) {
 			var collection = db.collection("levels");
 			collection.aggregate([{$sample: {size: 1}}], function(err, result) {
 				if (err || result == null) {
+					console.log(err);
 					resp.err = 'Level does not exist.';
 					res.status(500).end(JSON.stringify(resp));
 					db.close();
 				}
 				else {
 					resp.success = true;
-					resp.result = result;
+					resp.result = result[0];
 					res.end(JSON.stringify(resp));
 					db.close();
 				}
@@ -130,7 +130,7 @@ levelController.saveLevel = function(req, res) {
 	}
 
 	// Add UUID to create unique level name
-	data.level.level_name += uuid.v1();
+	data.level.level_name += "--" + uuid.v1();
 
 	// Check if level is solvable
 	if (levelController.validateLevel(data.level)) {
@@ -141,7 +141,7 @@ levelController.saveLevel = function(req, res) {
 			} 
 			else {
 				var collection = db.collection("levels");
-				collection.insert(req.body.level, function (err, result) {
+				collection.insert(data.level, function (err, result) {
 					if (err) {
 						console.log(err);
 						res.status(500).end(JSON.stringify(resp));

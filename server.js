@@ -40,9 +40,9 @@ indexRouter.get('/play', function(req, res) { res.sendfile('./views/game.html');
 indexRouter.get('/builder', function(req, res) { res.sendfile('./views/builder.html'); });
 
 indexRouter.get('/stat', levelController.getLevelStats);
-indexRouter.get('/level/get/:level_name', levelController.getLevel);
-indexRouter.post('/level/profile', levelController.profileLevel);
 indexRouter.get('/level/get', levelController.getRandomLevel);
+indexRouter.get('/level/get/name/:level_name', levelController.getLevel);
+indexRouter.post('/level/profile', levelController.profileLevel);
 indexRouter.get('/level/getbydiff', levelController.getRandomLevelByDifficulty);
 indexRouter.post('/level/save', levelController.saveLevel);
 indexRouter.post('/level/save/public', levelController.saveSubmittedLevel);
