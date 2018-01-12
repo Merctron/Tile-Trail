@@ -3,7 +3,7 @@ var uuid 			= require('node-uuid');
 var mongoClient 	= require('mongodb').MongoClient;
 var levelController = module.exports = {};
 var timeBound_n  		= 1000000000;
-var timeBound  			= 2; 
+var timeBound  			= 10; 
 var depthBound 			= 900;
 var scoreBound 			= 201;
 var easyScoreBound 		= 75;
@@ -122,6 +122,25 @@ levelController.getRandomLevelByDifficulty = function(req, res) {
 levelController.saveLevel = function(req, res) {
 	var resp = { success: false };
 	var data = req.body;
+	
+
+	for (var i = 0; i < data.level.map_grid.length; i++) {
+		for (var j = 0; j < data.level.map_grid[i].length; j++) {
+			data.level.map_grid[i][j] = parseInt(data.level.map_grid[i][j]);
+		}
+	}
+
+	for (var i = 0; i < data.level.map_items.length; i++) {
+		for (var j = 0; j < data.level.map_items[i].length; j++) {
+			data.level.map_items[i][j] = parseInt(data.level.map_items[i][j]);
+		}
+	}
+
+	data.level.lvl_obj = parseInt(data.level.lvl_obj);
+	data.level.len_x = parseInt(data.level.len_x);
+	data.level.len_y = parseInt(data.level.len_y);
+
+	console.log(data.level);
 
 	// First validate request object
 	if (!levelController.validateSaveLevelRequest(data)) {
@@ -286,7 +305,10 @@ levelController.validateLevel = function(level) {
 		var diff = process.hrtime(time);
 		level.time = diff;
 		level.depth = depth;
-		level.c_score =  computeComplexityScore(diff, depth);
+		level.c_score = levelController.computeComplexityScore(diff, depth);
+		console.log(level.time);
+		console.log(level.depth);
+		console.log(level.c_score);
 		if (level.c_score <= scoreBound) {
 			return true;
 		}
@@ -303,17 +325,23 @@ levelController.validateLevel = function(level) {
 // map_mem stores a memoized map keeping track of paths previously traversed.
 // Space complexity is kept constant because a single instance of the map is shared between recursive calls.
 levelController.isLevelValid = function(x_pos, y_pos, food_col, food_obj, map_grid, map_items, map_mem, depth) {
+	console.log(map_grid);
+	console.log("depth: " + depth);
+	console.log("food: " + food_col);
+	console.log("x: " + x_pos);
+	console.log("y: " + y_pos);
+	//if (depth > 10) return 0;
 	// Check if x/y positions are out of bounds
 	if (x_pos < 0 || x_pos >= map_grid[0].length) return 0;
 	if (y_pos < 0 || y_pos >= map_grid.length) return 0;
 
 	// Check current tile type, if it is an ice block there is no path
-	if (map_grid[y_pos][x_pos] == 1) {
+	if (map_grid[y_pos][x_pos] === 1) {
 		return 0;
 	}
 
 	// Check current tile item, if dest, check if food objective has been met
-	if (map_items[y_pos][x_pos] == 1) {
+	if (map_items[y_pos][x_pos] === 1) {
 		if (food_col >= food_obj) {
 			return depth;
 		}
@@ -322,12 +350,12 @@ levelController.isLevelValid = function(x_pos, y_pos, food_col, food_obj, map_gr
 		}
 	}
 
-	if (map_items[y_pos][x_pos] == 2) {
+	if (map_items[y_pos][x_pos] === 2) {
 		food_col++;
 	} 
 
 	// Record current tile inaccessible
-	map_grid[y_pos][x_pos] = 1;
+	map_grid[y_pos][x_pos] = parseInt(1);
 	
 
 	// Check path in each direction
@@ -345,14 +373,14 @@ levelController.isLevelValid = function(x_pos, y_pos, food_col, food_obj, map_gr
 	if (depth_d != 0) return depth_d;
 
 	// Reset current tile while moving up the recursion stack
-	map_grid[y_pos][x_pos] = 0;
+	map_grid[y_pos][x_pos] = parseInt(0);
 
 	return 0;
 }
 
 levelController.computeComplexityScore = function(diff, depth) {
 	var total_time = diff[0] + (diff[1] / timeBound_n);
-	var score = (((depth / depthBound) + (total_time / timeBound)) / 2) * 100;
+	var score = ((depth / depthBound) + (total_time / timeBound)) * 100;
 	return score;
 }
 

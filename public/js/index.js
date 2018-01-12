@@ -6,6 +6,12 @@ var LVL_CONSTANTS = {
     DEST         : 4
 };
 
+var diffMap = {
+	EASY: 	0,
+	MEDIUM: 1,
+	HARD: 	2
+}
+
 var player_x 	= 0;
 var player_y 	= 0;
 var grid_len_x 	= 8;

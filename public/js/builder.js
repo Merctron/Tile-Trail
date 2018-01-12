@@ -167,8 +167,10 @@ function setupMarkupKeys() {
 
 				map_ent[marker_y][marker_x].destroy();
 				map_ent[marker_y][marker_x] = newTile;
+				itm_ent[marker_y][marker_x].destroy();
 
 				map_sch[marker_y][marker_x] = 0;
+				itm_sch[marker_y][marker_x] = 0;
 			}
 			console.log(map_sch);
 			console.log(itm_sch);
@@ -215,17 +217,23 @@ function publishMap() {
 	console.log(JSON.stringify(final_map));
 
 	if (validateMap(final_map)) {
+		alert("Please wait while your submission is evaluated...");
 		$.post("/level/save", {level: final_map}, function(result){
 			var data = JSON.parse(result);
 	    	console.log(data);
 	    	if (data.success == true) {
-	    		alert("Your map is valid and has been submitted! Your map complexity is: " 
-	    			+ data.result.time + ". Share your creation using the link: https://tile-trail.herokuapp.com/" + data.level_name);
+	    		alert("Your map is valid and has been submitted! Your map has a difficulty of " 
+	    			+ convertScoreToLabel(data.result.c_score) + " (Complexity score: " + data.result.c_score 
+	    			+ "/200). Share your creation using the link: https://tile-trail.herokuapp.com/" 
+	    			+ data.result.level_name);
 	    	}
 	    	else {
 	    		alert("Sorry this map is invalid or unsolvable.");
 	    	}
 	    });
+	}
+	else {
+		alert("Sorry this map is invalid or unsolvable.");
 	}
 }
 
@@ -242,6 +250,18 @@ function validateMap(map) {
 	}
 	
 	return valid;
+}
+
+function convertScoreToLabel(score) {
+	if (score < 75) {
+		return "Easy";
+	}
+	else if (score < 150) {
+		return "Medium";
+	}
+	else if (score < 201) {
+		return "Hard";
+	}
 }
 
 function createCustomAlert(txt) {
