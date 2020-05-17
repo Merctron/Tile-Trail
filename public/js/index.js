@@ -33,7 +33,7 @@ var lvl_1_items;
 var lvl_obj        = 2;
 var lvl_obj_gained = 0;
 var cur_lvl        = 0;
-var cur_lvl_name   = '';
+var cur_lvl_name   = 'level_0';
 
 var vp_dx   = 0;
 var vp_dy   = 0;
@@ -113,6 +113,8 @@ $(document).ready(function() {
     $(document).on('click', '.lvlsb', function(obj) {
         console.log(obj.target.attributes.data.value);
         cur_lvl = parseInt(obj.target.attributes.data.value);
+        let level_name = `level_${cur_lvl}`;
+        cur_lvl_name = level_name;
         console.log("Number of Levels: " + cur_lvl);
         resetGame();
         $('#menubpanel').css("display", "block");
@@ -123,7 +125,7 @@ $(document).ready(function() {
 
     $.getJSON("/stat", function(result) {
         console.log(result);
-        for (var i = 0; i < result.total_lvls; i++) {
+        for (var i = 0; i < 5; i++) {
             if (i % 2 == 0) {
                 $( "#lvlrow1" ).append( "<button data=" + i.toString() + " type='button' class='btn lvlsb' style='margin-top: 5px; width: 50px; font-size: 30px;'>" + i.toString() + "</button>" );
             }
@@ -131,15 +133,13 @@ $(document).ready(function() {
                 $( "#lvlrow2" ).append( "<button data=" + i.toString() + "type='button' class='btn lvlsb' style='margin-top: 5px; width: 50px; font-size: 30px;'>" + i.toString() + "</button>" );
             }
         }
-        loadLevel(cur_lvl);
+        loadLevel(`level_${cur_lvl}`);
     });
 });
 
 function loadLevel(level_name) {
-    var url = "/level/get";
-    if (level_name) {
-        url = "/level/get/name/" + level_name;
-    }
+    level_name = level_name || cur_lvl_name;
+    let url = "/level/get/name/" + level_name;
     $.getJSON(url, function(result) {
         var data = result.result;
         lvl_obj = data.lvl_obj;
@@ -202,10 +202,15 @@ function loadEventHandler() {
             });
         }
         else if (game_over) {
-            resetGame(cur_lvl_name);
+            resetGame(null);
         }
         else if (lvl_over) {
-            resetGame(null);
+            cur_lvl = (cur_lvl + 1) % 5;
+            let level_name = `level_${cur_lvl}`;
+            cur_lvl_name = level_name;
+            console.log(`Reseting game to level: ${level_name}`);
+            console.log(`Current level: ${cur_lvl_name}`);
+            resetGame(level_name);
         }
     });
 }
@@ -269,6 +274,7 @@ function buildLevel(lvl, lvl_items) {
 }
 
 function drawBoard() {
+    if (grid.length <= 0) return;
     //canvas.context.fillStyle = '#333333';
     //canvas.context.fillRect(0, 0, 640, 640);
     // Draw grid
@@ -318,8 +324,6 @@ function drawBoard() {
         window.cancelAnimationFrame(gameLoopHandle);
     }
     if (lvl_over) {
-        cur_lvl++;
-        cur_lvl = cur_lvl % 1;
         panel = Crafty.e("2D, Tween, Canvas, lc_panel")
             .attr({alpha: 0.1, x: 80, y: 160, w: 480, h: 320})
             .tween({alpha: 1.0, x: 80, y: 160}, 3000);
@@ -340,6 +344,7 @@ function loop() {
 }
 
 function resetGame(level_name) {
+    console.log(`Loading level: ${level_name}`);
     Crafty('obj').each(function() { this.destroy(); });
     Crafty.stop(true);
     window.cancelAnimationFrame(gameLoopHandle);
