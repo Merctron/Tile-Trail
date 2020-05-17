@@ -1,9 +1,8 @@
 {
-  "name": "chat-service",
+  "name": "tile-trail",
   "version": "0.0.1",
-  "description": "Paperchat session/chat coordination service",
+  "description": "tile-trail",
   "dependencies": {
-    "bcrypt": "^1.0.2",
     "body-parser": "^1.9.2",
     "cookie-parser": "^1.4.3",
     "cors": "~2.8.3",
@@ -20,8 +19,5 @@
   },
   "scripts": {
     "start": "node server.js"
-  },
-  "engines": {
-    "node": "0.10.31"
   }
 }
