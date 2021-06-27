@@ -14,7 +14,7 @@
     "promise": "^7.1.1",
     "pug": "^3.0.1",
     "socket.io": "^2.4.0",
-    "trim": "0.0.1",
+    "trim": "0.0.3",
     "socket.io-redis": "^4.0.0"
   },
   "scripts": {
